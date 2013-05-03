@@ -1,4 +1,4 @@
-algoritimo_djikistra
+Algoritimo_Dijkistra
 ====================
 
 Trabalho prático para disciplina de TCP-IP e Roteamento
