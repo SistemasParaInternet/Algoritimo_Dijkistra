@@ -29,8 +29,10 @@ program Dijkistra
     integer, parameter :: arq = 10 !parâmetro que define um nome (arq) para o valor 10 que irá referênciar o arquivo em disco
     integer, parameter :: INFINITO = 1000000 !valor definido como infinito
     integer, parameter :: MAXIMO = 4096 !máximo de nodos que o grafo de distâncias pode possuir
+    character*255, parameter :: NOME_ARQUIVO = 'matriz-212.dat' !paâmetro que recebe a localização do arquivo de rotas no disco
     integer :: tamanho !tamanho da matriz, que será obtida ao ler a primeira linha do arquivo em disco
-    character*1300 :: l !variável que receberá o conteúdo lido de cada linha do arquivo
+    character*2048 :: l !variável que receberá o conteúdo lido de cada linha do arquivo
+    !integer :: tam !variável que receberá o tamnho da linha lida do arquivo
     integer:: linha, coluna, erro, fim_arquivo, pos1, pos2, n, aux, origem, destino, minimo, indice !variáveis de controle
     type (elemento), dimension(:), allocatable:: caminho_curto !vetor dinâmico que receberá os nodos que compõe o caminho mais curto
     
@@ -48,8 +50,7 @@ program Dijkistra
     print *, ''
 
     ! Abertura do arquivo contendo as distâncias
-    !open(unit=arq, file='rotas.dat', status='old', iostat=erro, access='sequential')
-    open(unit=arq, file='matriz-112.dat', status='old', iostat=erro, access='sequential')
+    open(unit=arq, file=NOME_ARQUIVO, status='old', iostat=erro, access='sequential')
     
     ! Verifica se o arquivo foi aberto comsucesso
     if (erro == 0) then
@@ -62,20 +63,23 @@ program Dijkistra
         ! faz a leituta do arquivo para obter os valores que preencherão a matriz
         
         do !1
-            read(arq,*,iostat=fim_arquivo) l
+            read(arq,'(A)', iostat=fim_arquivo) l
             if (fim_arquivo < 0) then
                 exit
             end if
+            
             ! tokeniza a linha lida do arquivo para obter os valores das distâncias entre os elementos do grafo
             pos1 = 1
             n = 1
             
             do !2
-                pos2 = index(l(pos1:), '-')
+                pos2 = index(l(pos1:), ' ')
+                if (l(pos1+1:) == '' .and. l(pos1+2:) == '') exit
                 if (pos2 == 0) then
-                   read(l(pos1:), '(i10)') matriz(linha,n)
-                   exit 
+                    read(l(pos1:), '(i10)') matriz(linha,n)
+                    exit
                 end if
+                
                 ! armazena o valor extraido da string para a matriz de inteiros.
                 read(l(pos1:pos1+pos2-2), '(i10)') matriz(linha,n)
                 n = n + 1
@@ -89,6 +93,9 @@ program Dijkistra
 
     else !se o arquivo não for aberto com sucesso
         print *,'Erro na abertura do arquivo!'
+        print *,''
+        print *,''
+        stop
     end if
     
     ! inicialização do vetor de caminhos mais curtos com valores default
@@ -202,7 +209,7 @@ program Dijkistra
         linha = caminho_curto(linha)%anterior
     end do
     print *, 'Distância = ', caminho_curto(destino)%distancia
-    !fecha o arquivo    
+    !fecha o arquivo
     close(arq)
     
     !libera o espaço de memória ocupado pelos ponterios
